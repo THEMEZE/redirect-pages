@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THEMEZE — Mes projets</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+
+    <style>
+        :root{ --sand:#f7f0e2; --sky:#d7ece7; --sunset:#e8703a; --night:#223034; }
+        *{ box-sizing:border-box; }
+        body{
+            margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(160deg, var(--sand) 0%, var(--sand) 45%, var(--sky) 100%);
+            color: var(--night); text-align:center; padding:2rem;
+        }
+        .card{ background: rgba(255,255,255,.9); border-radius: 24px; padding: 2.5rem 2rem; max-width: 420px; box-shadow: 0 10px 34px rgba(34,48,52,.15); }
+        h1{ color: var(--sunset); font-size: 1.4rem; margin: 0 0 1.2rem; }
+        a{ display:block; margin: .9rem 0; font-size: 1.1rem; color: var(--sunset); text-decoration:none; font-weight:600; }
+        a:hover{ text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🌅 Mes projets</h1>
+        <a href="./rodtrip/">🚐 RodTrip</a>
+        <a href="./bibiunion/">💍 BibiUnion</a>
+        <a href="./famille/">📸 Famille</a>
+        <a href="./vacances/">🏖️ Vacances</a>
+    </div>
+</body>
+</html>
