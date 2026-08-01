@@ -200,19 +200,59 @@ redirect_publish() {
         fi
 
         # ── 4. Pousser la nouvelle version ────────────────────────────
-        if git push origin main 2>/tmp/push_err.log; then
-            echo "✅ Redirection publiée sur GitHub Pages ($PROJECT)"
-        else
-            echo "❌ Échec du push vers $REPO_SSH"
-            echo "   $(cat /tmp/push_err.log)"
+        for i in 1 2 3; do
             echo ""
-            echo "   Causes fréquentes :"
-            echo "   • Le dépôt n'existe pas encore sur GitHub → crée-le (public, vide)"
-            echo "   • Faute de frappe dans l'URL SSH (vérifie le .git final)"
-            echo "   • Le dépôt est privé sans que GitHub Pages soit disponible sur ton plan"
-            echo "   • Une nouvelle modification distante est arrivée entre le pull et le push"
-            echo "     → relance simplement la publication, le pull --rebase la récupérera."
-            exit 1
-        fi
+            echo "══════════════════════════════════════════════"
+            echo "🚀 Publication GitHub Pages ($PROJECT)"
+            echo "   Tentative $i/3"
+            echo "══════════════════════════════════════════════"
+
+            if git push origin main 2>/tmp/push_err.log; then
+                echo "✅ Redirection publiée sur GitHub Pages ($PROJECT)"
+                exit 0
+            fi
+
+            echo ""
+            echo "⚠️ Le push a été refusé."
+            cat /tmp/push_err.log
+
+            echo ""
+            echo "=== Diagnostic Git ==="
+            git status
+
+            echo ""
+            git log --oneline --graph --decorate --all -20
+
+            echo ""
+            echo "🔄 Tentative de resynchronisation avec GitHub..."
+
+            if git pull --rebase origin main 2>/tmp/pull_err.log; then
+                echo "✔ Synchronisation terminée."
+                echo "↻ Nouvelle tentative de publication..."
+            else
+                echo "❌ Conflit lors de la synchronisation."
+                echo "   $(cat /tmp/pull_err.log)"
+                git rebase --abort 2>/dev/null || true
+                exit 1
+            fi
+        done
+
+        echo ""
+        echo "❌ Impossible de publier après 3 tentatives."
+        echo ""
+
+        echo "Causes fréquentes :"
+        echo " • Le dépôt n'existe pas encore sur GitHub → crée-le (public, vide)"
+        echo " • Faute de frappe dans l'URL SSH (vérifie le .git final)"
+        echo " • Le dépôt est privé sans que GitHub Pages soit disponible sur ton plan"
+        echo " • Une nouvelle modification distante est arrivée entre le pull et le push"
+        echo "   → relance simplement la publication."
+        echo " • Un conflit Git empêche le rebase automatique."
+        echo ""
+
+        echo "Dernier message Git :"
+        cat /tmp/push_err.log
+
+        exit 1
     )
 }
