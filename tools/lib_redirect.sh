@@ -162,25 +162,57 @@ redirect_publish() {
 
     (
         cd "$REDIRECT_DIR" || exit 1
-        git pull --rebase origin main 2>/dev/null || true
 
+        # ── 1. Récupérer les modifications distantes ────────────────
+        if ! git fetch origin 2>/tmp/fetch_err.log; then
+            echo "❌ Impossible de récupérer les modifications distantes (git fetch)."
+            echo "   $(cat /tmp/fetch_err.log)"
+            exit 1
+        fi
+
+        # ── 2. Écrire/committer la modification locale AVANT de rebaser,
+        #      pour qu'elle soit rejouée par-dessus la version distante à
+        #      jour (et non perdue si le rebase s'arrête en conflit).
         git add "$PROJECT/index.html"
-        if ! git diff --cached --quiet; then
-            git commit -m "$COMMIT_MSG"
-            if git push origin main 2>/tmp/push_err.log; then
-                echo "✅ Redirection publiée sur GitHub Pages ($PROJECT)"
-            else
-                echo "❌ Échec du push vers $REPO_SSH"
-                echo "   $(cat /tmp/push_err.log)"
-                echo ""
-                echo "   Causes fréquentes :"
-                echo "   • Le dépôt n'existe pas encore sur GitHub → crée-le (public, vide)"
-                echo "   • Faute de frappe dans l'URL SSH (vérifie le .git final)"
-                echo "   • Le dépôt est privé sans que GitHub Pages soit disponible sur ton plan"
-                exit 1
-            fi
+        local_change=1
+        if git diff --cached --quiet; then
+            local_change=0
         else
+            git commit -m "$COMMIT_MSG"
+        fi
+
+        # ── 3. Synchroniser le dépôt local avec le distant ───────────
+        if ! git pull --rebase origin main 2>/tmp/pull_err.log; then
+            echo "❌ Conflit lors de la synchronisation avec GitHub ($PROJECT)."
+            echo "   $(cat /tmp/pull_err.log)"
+            echo ""
+            echo "   Le dépôt distant contient des modifications qui entrent en"
+            echo "   conflit avec la mise à jour locale. Rien n'a été écrasé ni"
+            echo "   poussé : va dans \"$REDIRECT_DIR\" pour résoudre le conflit"
+            echo "   manuellement (git status), puis relance la publication."
+            git rebase --abort 2>/dev/null || true
+            exit 1
+        fi
+
+        if [ "$local_change" -eq 0 ]; then
             echo "✔ Aucun changement à envoyer ($PROJECT)."
+            exit 0
+        fi
+
+        # ── 4. Pousser la nouvelle version ────────────────────────────
+        if git push origin main 2>/tmp/push_err.log; then
+            echo "✅ Redirection publiée sur GitHub Pages ($PROJECT)"
+        else
+            echo "❌ Échec du push vers $REPO_SSH"
+            echo "   $(cat /tmp/push_err.log)"
+            echo ""
+            echo "   Causes fréquentes :"
+            echo "   • Le dépôt n'existe pas encore sur GitHub → crée-le (public, vide)"
+            echo "   • Faute de frappe dans l'URL SSH (vérifie le .git final)"
+            echo "   • Le dépôt est privé sans que GitHub Pages soit disponible sur ton plan"
+            echo "   • Une nouvelle modification distante est arrivée entre le pull et le push"
+            echo "     → relance simplement la publication, le pull --rebase la récupérera."
+            exit 1
         fi
     )
 }
