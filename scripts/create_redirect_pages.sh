@@ -21,7 +21,7 @@ cd "$REPO_DIR"
 
 echo "🚀 Génération des pages hors ligne dans $REPO_DIR"
 
-mkdir -p rodtrip bibiunion famille vacances
+mkdir -p rodtrip bibiunion budget famille vacances
 
 redirect_write_offline rodtrip/index.html \
     "Sunset Évasion — Carnet de route" \
@@ -31,9 +31,15 @@ redirect_write_offline rodtrip/index.html \
 
 redirect_write_offline bibiunion/index.html \
     "BibiUnion — Notre Mariage" \
-    "<link rel=\"icon\" type=\"image/png\" href=\"https://raw.githubusercontent.com/THEMEZE/BibiUnion2/main/static/img/Bridgerton_logo_square.png\">" \
+    "<link rel=\"icon\" type=\"image/png\" href=\"https://themeze.github.io/redirect-pages/assets/bibiunion/Bridgerton_logo_square.png\">" \
     "💍" \
     "Le site est momentanément indisponible.<br>Réessayez dans quelques instants."
+
+redirect_write_offline budget/index.html \
+    "Budget — Gestion financière" \
+    "<link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>\">" \
+    "💰" \
+    "Le tableau de bord budget n'est pas en ligne pour le moment.<br>Le Raspberry Pi est peut-être arrêté."
 
 redirect_write_offline famille/index.html \
     "Souvenirs famille" \
@@ -47,7 +53,7 @@ redirect_write_offline vacances/index.html \
     "🏖️" \
     "Cet espace n'est pas en ligne pour le moment."
 
-echo "✅ Pages hors ligne générées (rodtrip, bibiunion, famille, vacances)."
+echo "✅ Pages hors ligne générées (rodtrip, bibiunion, budget, famille, vacances)."
 echo ""
 echo "Prochaine étape (une seule fois) :"
 echo "  cd $REPO_DIR"
